@@ -1,0 +1,5 @@
+node_modules
+dist
+.verify.cjs
+*.local
+.DS_Store
