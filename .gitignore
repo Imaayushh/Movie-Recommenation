@@ -3,3 +3,4 @@ dist
 .verify.cjs
 *.local
 .DS_Store
+vite.config.ts.timestamp-*

@@ -17,6 +17,22 @@ npm run build      # production build
 
 Your original C source is preserved untouched at `reference/original.c`.
 
+## Design system
+
+The UI is built on **[Astryx](https://www.npmjs.com/package/@astryxdesign/core) v0.5.4**
+(`neutral` theme) rather than hand-written CSS. Conventions live in `AGENTS.md`
+(regenerate with `npx @astryxdesign/cli init`):
+
+- layout comes from components (`AppShell`, `Layout`, `Stack`, `Grid`, `Section`) — no raw `<div>` soup
+- all colour and spacing goes through theme tokens (`var(--color-*)`, `var(--spacing-*)`)
+- text is `Heading` / `Text` with semantic `type`, never raw `<p>`/`<h1>`
+- `npx astryx doctor` verifies the setup; `npx astryx component <Name>` documents any component
+
+> **Note:** Astryx requires React ≥ 19 (every published version declares that peer range),
+> so this project runs **React 19**. Adding Astryx to a React 18 app will fail with `ERESOLVE`.
+
+`src/styles.css` was deleted — there is no custom stylesheet left.
+
 ## C → TypeScript mapping
 
 | C | TypeScript |

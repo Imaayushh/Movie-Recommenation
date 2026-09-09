@@ -1,4 +1,17 @@
 import { useMemo, useState } from 'react';
+import { Badge } from '@astryxdesign/core/Badge';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Button } from '@astryxdesign/core/Button';
+import { Card } from '@astryxdesign/core/Card';
+import { Grid } from '@astryxdesign/core/Grid';
+import { Heading } from '@astryxdesign/core/Heading';
+import { List, ListItem } from '@astryxdesign/core/List';
+import { ProgressBar } from '@astryxdesign/core/ProgressBar';
+import { Section } from '@astryxdesign/core/Section';
+import { Stack } from '@astryxdesign/core/Stack';
+import { Text } from '@astryxdesign/core/Text';
+import { Token } from '@astryxdesign/core/Token';
+
 import { CATEGORIES, getCategory } from '../types';
 import type { RecommendResult, Recommendation } from '../lib/recommender';
 import { TOP_RATING_THRESHOLD, pickSurprise } from '../lib/recommender';
@@ -13,6 +26,7 @@ interface SuggestionsPanelProps {
 export function SuggestionsPanel({ userName, result, onRate }: SuggestionsPanelProps) {
   const [genreFilter, setGenreFilter] = useState<number | null>(null);
   const [grouped, setGrouped] = useState(true);
+  const [showBreakdown, setShowBreakdown] = useState(false);
   const [spotlight, setSpotlight] = useState<Recommendation | null>(null);
 
   const visible = useMemo(
@@ -40,177 +54,198 @@ export function SuggestionsPanel({ userName, result, onRate }: SuggestionsPanelP
   }
 
   return (
-    <div className="panel">
-      <div className="panel__head">
-        <h2>Give your suggestions</h2>
-        <p>
-          Personalised picks for <strong>{userName}</strong>. The genre engine only switches on once you hand out a{' '}
-          {TOP_RATING_THRESHOLD}★ or 5★ — until then you get trending / taste-twin picks.
-        </p>
-      </div>
+    <Section padding={4}>
+      <Stack gap={4}>
+        <Stack gap={1}>
+          <Heading level={2}>Give your suggestions</Heading>
+          <Text color="secondary">
+            Personalised picks for {userName}. The genre engine only switches on once you hand out a{' '}
+            {TOP_RATING_THRESHOLD}★ or 5★ — until then you get trending / taste-twin picks.
+          </Text>
+        </Stack>
 
-      {result.unlocked ? (
-        <div className="notice notice--good">
-          <strong>Genre engine unlocked.</strong> You rated {result.liked.length} movie
-          {result.liked.length > 1 ? 's' : ''} at {TOP_RATING_THRESHOLD}★+, so we are pulling more titles from those
-          genres.
-        </div>
-      ) : (
-        <div className="notice notice--warn">
-          <strong>Genre engine locked.</strong> Rate any movie {TOP_RATING_THRESHOLD}★ or 5★ to unlock
-          same-genre recommendations. Below are trending picks in the meantime.
-        </div>
-      )}
+        {result.unlocked ? (
+          <Banner
+            status="success"
+            title={`Genre engine unlocked — you rated ${result.liked.length} movie${
+              result.liked.length > 1 ? 's' : ''
+            } at ${TOP_RATING_THRESHOLD}★+, so we are pulling more titles from those genres.`}
+          />
+        ) : (
+          <Banner
+            status="warning"
+            title={`Genre engine locked — rate any movie ${TOP_RATING_THRESHOLD}★ or 5★ to unlock same-genre recommendations.`}
+          />
+        )}
 
-      <div className="profile-grid">
-        <div className="profile-card">
-          <h4>Top rated by you</h4>
-          {result.liked.length === 0 ? (
-            <p className="muted">Nothing at {TOP_RATING_THRESHOLD}★+ yet.</p>
-          ) : (
-            <ul className="plain">
-              {result.liked.map((l) => (
-                <li key={l.movie.id}>
-                  <span>{l.movie.moviename}</span>
-                  <span className="tag tag--good">{l.rating}★</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        <Grid columns={{ minWidth: 260 }} gap={2}>
+          <Card variant="muted" padding={3}>
+            <Stack gap={2}>
+              <Text type="label">Top rated by you</Text>
+              {result.liked.length === 0 ? (
+                <Text color="secondary">Nothing at {TOP_RATING_THRESHOLD}★+ yet.</Text>
+              ) : (
+                <List density="compact">
+                  {result.liked.map((l) => (
+                    <ListItem
+                      key={l.movie.id}
+                      label={l.movie.moviename}
+                      endContent={<Badge label={`${l.rating}★`} variant="success" />}
+                    />
+                  ))}
+                </List>
+              )}
+            </Stack>
+          </Card>
 
-        <div className="profile-card">
-          <h4>Rated low by you</h4>
-          {result.disliked.length === 0 ? (
-            <p className="muted">No low ratings recorded.</p>
-          ) : (
-            <ul className="plain">
-              {result.disliked.map((l) => (
-                <li key={l.movie.id}>
-                  <span>{l.movie.moviename}</span>
-                  <span className="tag tag--bad">{l.rating}★</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+          <Card variant="muted" padding={3}>
+            <Stack gap={2}>
+              <Text type="label">Rated low by you</Text>
+              {result.disliked.length === 0 ? (
+                <Text color="secondary">No low ratings recorded.</Text>
+              ) : (
+                <List density="compact">
+                  {result.disliked.map((l) => (
+                    <ListItem
+                      key={l.movie.id}
+                      label={l.movie.moviename}
+                      endContent={<Badge label={`${l.rating}★`} variant="error" />}
+                    />
+                  ))}
+                </List>
+              )}
+            </Stack>
+          </Card>
 
-        <div className="profile-card">
-          <h4>Your taste twins</h4>
-          {result.neighbours.length === 0 ? (
-            <p className="muted">Not enough overlap with other viewers yet.</p>
-          ) : (
-            <ul className="plain">
-              {result.neighbours.slice(0, 3).map((n) => (
-                <li key={n.user.id}>
-                  <span>{n.user.name}</span>
-                  <span className="tag">{Math.round(n.similarity * 100)}% match</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
+          <Card variant="muted" padding={3}>
+            <Stack gap={2}>
+              <Text type="label">Your taste twins</Text>
+              {result.neighbours.length === 0 ? (
+                <Text color="secondary">Not enough overlap with other viewers yet.</Text>
+              ) : (
+                <List density="compact">
+                  {result.neighbours.slice(0, 3).map((n) => (
+                    <ListItem
+                      key={n.user.id}
+                      label={n.user.name}
+                      endContent={<Badge label={`${Math.round(n.similarity * 100)}%`} />}
+                    />
+                  ))}
+                </List>
+              )}
+            </Stack>
+          </Card>
+        </Grid>
 
-      <div className="filter-bar">
-        <button className={`chip ${genreFilter === null ? 'chip--active' : ''}`} onClick={() => setGenreFilter(null)}>
-          All genres
-        </button>
-        {CATEGORIES.map((c) => (
-          <button
-            key={c.id}
-            className={`chip ${genreFilter === c.id ? 'chip--active' : ''}`}
-            onClick={() => setGenreFilter(genreFilter === c.id ? null : c.id)}
-          >
-            {c.emoji} {c.label}
-          </button>
-        ))}
-      </div>
+        <Stack gap={2}>
+          <Text type="label">Filter by genre</Text>
+          <Grid columns={{ minWidth: 130 }} gap={1}>
+            <Button
+              label="All genres"
+              size="sm"
+              variant={genreFilter === null ? 'primary' : 'secondary'}
+              onClick={() => setGenreFilter(null)}
+            />
+            {CATEGORIES.map((c) => (
+              <Button
+                key={c.id}
+                label={`${c.emoji} ${c.label}`}
+                size="sm"
+                variant={genreFilter === c.id ? 'primary' : 'secondary'}
+                onClick={() => setGenreFilter(genreFilter === c.id ? null : c.id)}
+              />
+            ))}
+          </Grid>
+        </Stack>
 
-      <div className="filter-bar filter-bar--split">
-        <div className="filter-bar__left">
-          <button className="btn btn--ghost btn--small" onClick={() => setSpotlight(pickSurprise(result))}>
-            🎲 Surprise me
-          </button>
+        <Stack direction="horizontal" gap={2}>
+          <Button label="Surprise me" onClick={() => setSpotlight(pickSurprise(result))} />
           {result.unlocked && (
-            <label className="switch">
-              <input type="checkbox" checked={grouped} onChange={(e) => setGrouped(e.target.checked)} />
-              Group by genre
-            </label>
+            <Button
+              label={grouped ? 'Grouped by genre' : 'Group by genre'}
+              variant={grouped ? 'primary' : 'secondary'}
+              size="sm"
+              onClick={() => setGrouped((v) => !v)}
+            />
           )}
-        </div>
-        <span className="muted">{visible.length} suggestion(s)</span>
-      </div>
+          <Button label={showBreakdown ? 'Hide scores' : 'Show scores'} size="sm" onClick={() => setShowBreakdown((v) => !v)} />
+          <Text type="supporting">{visible.length} suggestion(s)</Text>
+        </Stack>
 
-      {spotlight && (
-        <div className="spotlight">
-          <div>
-            <span className="spotlight__label">Tonight's pick</span>
-            <h3>{spotlight.movie.moviename}</h3>
-            <p className="muted">
-              {getCategory(spotlight.movie.category).emoji} {getCategory(spotlight.movie.category).label}
-              {spotlight.movie.year ? ` · ${spotlight.movie.year}` : ''} · {spotlight.match}% match
-            </p>
-            <p className="muted">
-              {spotlight.genreScore === 0
-                ? 'Deliberately picked outside your usual genres — something new to try.'
-                : 'A safe bet from a genre you already rate highly.'}
-            </p>
-          </div>
-          <div className="spotlight__actions">
-            <StarRating value={0} onChange={(rating) => onRate(spotlight.movie.id, rating)} />
-            <button className="btn btn--ghost btn--small" onClick={() => setSpotlight(null)}>
-              Dismiss
-            </button>
-          </div>
-        </div>
-      )}
+        {spotlight && (
+          <Card variant="blue" padding={3}>
+            <Stack gap={2}>
+              <Text type="label">Tonight's pick</Text>
+              <Heading level={3}>{spotlight.movie.moviename}</Heading>
+              <Text color="secondary">
+                {getCategory(spotlight.movie.category).emoji} {getCategory(spotlight.movie.category).label}
+                {spotlight.movie.year ? ` · ${spotlight.movie.year}` : ''} · {spotlight.match}% match
+              </Text>
+              <Text color="secondary">
+                {spotlight.genreScore === 0
+                  ? 'Deliberately picked outside your usual genres — something new to try.'
+                  : 'A safe bet from a genre you already rate highly.'}
+              </Text>
+              <Stack direction="horizontal" gap={2}>
+                <StarRating value={0} onChange={(rating) => onRate(spotlight.movie.id, rating)} />
+                <Button label="Dismiss" size="sm" onClick={() => setSpotlight(null)} />
+              </Stack>
+            </Stack>
+          </Card>
+        )}
 
-      {visible.length === 0 ? (
-        <p className="muted">No suggestions in this genre right now — try another filter.</p>
-      ) : groups ? (
-        groups.map(([categoryId, recs]) => {
-          const category = getCategory(categoryId);
-          const proof = proofFor(categoryId);
-          return (
-            <section className="genre-group" key={categoryId}>
-              <header className="genre-group__head">
-                <h3>
-                  {category.emoji} More {category.label}
-                </h3>
-                <span className="muted">
-                  {proof.length > 0
-                    ? `because you rated ${proof.map((p) => `${p.movie.moviename} ${p.rating}★`).join(' and ')}`
-                    : 'from your overall taste profile'}
-                </span>
-              </header>
-              <div className="rec-grid">
-                {recs.map((rec) => (
-                  <RecommendationCard key={rec.movie.id} rec={rec} onRate={onRate} />
-                ))}
-              </div>
-            </section>
-          );
-        })
-      ) : (
-        <div className="rec-grid">
-          {visible.map((rec) => (
-            <RecommendationCard key={rec.movie.id} rec={rec} onRate={onRate} />
-          ))}
-        </div>
-      )}
-    </div>
+        {visible.length === 0 ? (
+          <Text color="secondary">No suggestions in this genre right now — try another filter.</Text>
+        ) : groups ? (
+          groups.map(([categoryId, recs]) => {
+            const category = getCategory(categoryId);
+            const proof = proofFor(categoryId);
+            return (
+              <Stack gap={2} key={categoryId}>
+                <Stack gap={0.5}>
+                  <Heading level={3}>
+                    {category.emoji} More {category.label}
+                  </Heading>
+                  <Text type="supporting">
+                    {proof.length > 0
+                      ? `because you rated ${proof.map((p) => `${p.movie.moviename} ${p.rating}★`).join(' and ')}`
+                      : 'from your overall taste profile'}
+                  </Text>
+                </Stack>
+                <Grid columns={{ minWidth: 300 }} gap={2}>
+                  {recs.map((rec) => (
+                    <RecommendationCard
+                      key={rec.movie.id}
+                      rec={rec}
+                      onRate={onRate}
+                      showBreakdown={showBreakdown}
+                    />
+                  ))}
+                </Grid>
+              </Stack>
+            );
+          })
+        ) : (
+          <Grid columns={{ minWidth: 300 }} gap={2}>
+            {visible.map((rec) => (
+              <RecommendationCard key={rec.movie.id} rec={rec} onRate={onRate} showBreakdown={showBreakdown} />
+            ))}
+          </Grid>
+        )}
+      </Stack>
+    </Section>
   );
 }
 
 function RecommendationCard({
   rec,
   onRate,
+  showBreakdown,
 }: {
   rec: Recommendation;
   onRate: (movieId: number, rating: number) => void;
+  showBreakdown: boolean;
 }) {
-  const [open, setOpen] = useState(false);
   const category = getCategory(rec.movie.category);
 
   const parts = [
@@ -220,57 +255,58 @@ function RecommendationCard({
   ];
 
   return (
-    <article className={`rec-card ${rec.coldStart ? 'rec-card--cold' : ''}`}>
-      <header>
-        <div>
-          <h4>{rec.movie.moviename}</h4>
-          <span className="tag">
-            {category.emoji} {category.label}
-            {rec.movie.year ? ` · ${rec.movie.year}` : ''}
-          </span>
-        </div>
-        <div className="match" title="genre 60% + taste twins 30% + popularity 10%">
-          <span className="match__value">{rec.match}%</span>
-          <span className="match__label">match</span>
-        </div>
-      </header>
+    <Card padding={3}>
+      <Stack gap={2}>
+        <Stack direction="horizontal" gap={2}>
+          <Stack gap={1}>
+            <Heading level={4}>{rec.movie.moviename}</Heading>
+            <Token
+              label={`${category.emoji} ${category.label}${rec.movie.year ? ` · ${rec.movie.year}` : ''}`}
+            />
+          </Stack>
+          <Text weight="bold">{rec.match}%</Text>
+        </Stack>
 
-      <div className="meter" aria-hidden="true">
-        <div className="meter__fill" style={{ width: `${rec.match}%` }} />
-      </div>
+        <ProgressBar
+          label={`${rec.movie.moviename} match`}
+          value={rec.match}
+          max={100}
+          isLabelHidden
+          hasValueLabel
+        />
 
-      <ul className="reasons">
-        {rec.reasons.length === 0 && <li className="muted">Recommended by the blended ranking model.</li>}
-        {rec.reasons.map((reason) => (
-          <li key={reason}>{reason}</li>
-        ))}
-      </ul>
-
-      {open && (
-        <div className="breakdown">
-          {parts.map((p) => (
-            <div className="breakdown__row" key={p.label}>
-              <span className="breakdown__label">{p.label}</span>
-              <div className="meter meter--thin">
-                <div className="meter__fill" style={{ width: `${Math.round(p.value * 100)}%` }} />
-              </div>
-              <span className="breakdown__contribution">
-                +{Math.round(p.value * p.weight * 100)}
-              </span>
-            </div>
+        <Stack gap={0.5}>
+          {rec.reasons.length === 0 && <Text type="supporting">Recommended by the blended ranking model.</Text>}
+          {rec.reasons.map((reason) => (
+            <Text key={reason} type="supporting">
+              → {reason}
+            </Text>
           ))}
-          <small className="muted">
-            contribution points out of 100 — genre stays at 0 until you rate something {TOP_RATING_THRESHOLD}★+
-          </small>
-        </div>
-      )}
+        </Stack>
 
-      <footer>
+        {showBreakdown && (
+          <Stack gap={1}>
+            {parts.map((p) => (
+              <Stack direction="horizontal" gap={1} key={p.label}>
+                <Text type="supporting">{p.label}</Text>
+                <ProgressBar
+                  label={p.label}
+                  value={Math.round(p.value * 100)}
+                  max={100}
+                  isLabelHidden
+                  hasValueLabel
+                />
+                <Text type="supporting">+{Math.round(p.value * p.weight * 100)}</Text>
+              </Stack>
+            ))}
+            <Text type="supporting">
+              contribution points out of 100 — genre stays at 0 until you rate something {TOP_RATING_THRESHOLD}★+
+            </Text>
+          </Stack>
+        )}
+
         <StarRating value={0} size="sm" onChange={(rating) => onRate(rec.movie.id, rating)} />
-        <button className="btn btn--ghost btn--small" onClick={() => setOpen((v) => !v)}>
-          {open ? 'Hide' : 'Why this?'}
-        </button>
-      </footer>
-    </article>
+      </Stack>
+    </Card>
   );
 }

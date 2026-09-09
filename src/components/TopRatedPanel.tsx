@@ -1,4 +1,14 @@
 import { useState } from 'react';
+import { Button } from '@astryxdesign/core/Button';
+import { Heading } from '@astryxdesign/core/Heading';
+import { List, ListItem } from '@astryxdesign/core/List';
+import { ProgressBar } from '@astryxdesign/core/ProgressBar';
+import { Section } from '@astryxdesign/core/Section';
+import { Stack } from '@astryxdesign/core/Stack';
+import { Table, TableBody, TableCell, TableHeader, TableHeaderCell, TableRow } from '@astryxdesign/core/Table';
+import { Text } from '@astryxdesign/core/Text';
+import { Token } from '@astryxdesign/core/Token';
+
 import type { Matrix, MovieStat } from '../lib/recommender';
 import { topRated } from '../lib/recommender';
 import { getCategory } from '../types';
@@ -14,99 +24,110 @@ export function TopRatedPanel({ matrix, highlightMovieIds }: TopRatedPanelProps)
   const ranked = topRated(matrix, minRatings);
 
   return (
-    <div className="panel">
-      <div className="panel__head">
-        <h2>Top rating of movies</h2>
-        <p>
-          Average score across all viewers. Highlighted rows are movies you personally rated{' '}
-          {highlightMovieIds.length ? '' : '— none yet'}.
-        </p>
-      </div>
+    <Section padding={4}>
+      <Stack gap={4}>
+        <Stack gap={1}>
+          <Heading level={2}>Top rating of movies</Heading>
+          <Text color="secondary">
+            Average score across all viewers
+            {highlightMovieIds.length > 0 ? ' — highlighted rows are movies you rated.' : '.'}
+          </Text>
+        </Stack>
 
-      <div className="filter-bar">
-        <span className="muted">Minimum number of ratings:</span>
-        {[1, 2, 3, 4].map((n) => (
-          <button key={n} className={`chip ${minRatings === n ? 'chip--active' : ''}`} onClick={() => setMinRatings(n)}>
-            {n}+
-          </button>
-        ))}
-        <button className="btn btn--ghost btn--small" onClick={() => setShowMatrix((v) => !v)}>
-          {showMatrix ? 'Hide' : 'Show'} raw matrix
-        </button>
-      </div>
+        <Stack direction="horizontal" gap={1}>
+          <Text type="supporting">Minimum ratings:</Text>
+          {[1, 2, 3, 4].map((n) => (
+            <Button
+              key={n}
+              label={`${n}+`}
+              size="sm"
+              variant={minRatings === n ? 'primary' : 'secondary'}
+              onClick={() => setMinRatings(n)}
+            />
+          ))}
+          <Button
+            label={showMatrix ? 'Hide raw matrix' : 'Show raw matrix'}
+            size="sm"
+            onClick={() => setShowMatrix((v) => !v)}
+          />
+        </Stack>
 
-      <ol className="rank-list">
-        {ranked.map((stat, index) => (
-          <RankRow key={stat.movie.id} stat={stat} rank={index + 1} highlight={highlightMovieIds.includes(stat.movie.id)} />
-        ))}
-        {ranked.length === 0 && <p className="muted">No movie clears that bar yet.</p>}
-      </ol>
+        {ranked.length === 0 ? (
+          <Text color="secondary">No movie clears that bar yet.</Text>
+        ) : (
+          <List listStyle="decimal" hasDividers>
+            {ranked.map((stat) => (
+              <RankRow
+                key={stat.movie.id}
+                stat={stat}
+                highlight={highlightMovieIds.includes(stat.movie.id)}
+              />
+            ))}
+          </List>
+        )}
 
-      {showMatrix && <MatrixTable matrix={matrix} />}
-    </div>
+        {showMatrix && <MatrixTable matrix={matrix} />}
+      </Stack>
+    </Section>
   );
 }
 
-function RankRow({ stat, rank, highlight }: { stat: MovieStat; rank: number; highlight: boolean }) {
+function RankRow({ stat, highlight }: { stat: MovieStat; highlight: boolean }) {
   const category = getCategory(stat.movie.category);
   return (
-    <li className={`rank-row ${highlight ? 'rank-row--mine' : ''}`}>
-      <span className="rank-row__rank">{rank}</span>
-      <div className="rank-row__body">
-        <div className="rank-row__title">
-          {stat.movie.moviename}
-          <span className="tag">
-            {category.emoji} {category.label}
-          </span>
-          {highlight && <span className="tag tag--good">you rated</span>}
-        </div>
-        <div className="meter">
-          <div className="meter__fill" style={{ width: `${(stat.average / 5) * 100}%` }} />
-        </div>
-      </div>
-      <span className="rank-row__score">
-        {stat.average.toFixed(1)}★
-        <small>{stat.count} rating{stat.count > 1 ? 's' : ''}</small>
-      </span>
-    </li>
+    <ListItem
+      label={stat.movie.moviename}
+      description={`${category.emoji} ${category.label}${highlight ? ' · you rated' : ''}`}
+      endContent={
+        <Stack direction="horizontal" gap={2}>
+          <Text weight="bold">{stat.average.toFixed(1)}★</Text>
+          <Text type="supporting">
+            {stat.count} rating{stat.count > 1 ? 's' : ''}
+          </Text>
+          <ProgressBar
+            label={`${stat.movie.moviename} average`}
+            value={Math.round((stat.average / 5) * 100)}
+            max={100}
+            isLabelHidden
+          />
+        </Stack>
+      }
+    />
   );
 }
 
 /** The modern equivalent of C `case 3`: dump matrix[i][j] as a grid. */
 function MatrixTable({ matrix }: { matrix: Matrix }) {
   return (
-    <div className="matrix-wrap">
-      <h3>Raw ratings matrix</h3>
-      <p className="muted">0 = Not Rated, 1–5 = Rating. Rows are users, columns are movies.</p>
-      <table className="matrix">
-        <thead>
-          <tr>
-            <th>User</th>
+    <Stack gap={2}>
+      <Stack gap={0.5}>
+        <Heading level={3}>Raw ratings matrix</Heading>
+        <Text type="supporting">0 = Not Rated, 1–5 = Rating. Rows are users, columns are movies.</Text>
+      </Stack>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHeaderCell>User</TableHeaderCell>
             {matrix.movies.map((m) => (
-              <th key={m.id} title={m.moviename}>
-                {m.id}
-              </th>
+              <TableHeaderCell key={m.id}>{m.id}</TableHeaderCell>
             ))}
-          </tr>
-        </thead>
-        <tbody>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {matrix.users.map((user, ui) => (
-            <tr key={user.id}>
-              <th>
-                {user.name} <small>({user.id})</small>
-              </th>
+            <TableRow key={user.id}>
+              <TableCell>
+                {user.name} ({user.id})
+              </TableCell>
               {matrix.movies.map((movie, mi) => {
                 const value = matrix.values[ui][mi];
-                return (
-                  <td key={movie.id} className={value === 0 ? 'cell--empty' : value >= 4 ? 'cell--high' : value <= 2 ? 'cell--low' : ''}>
-                    {value === 0 ? '·' : value}
-                  </td>
-                );
+                return <TableCell key={movie.id}>{value === 0 ? '·' : value}</TableCell>;
               })}
-            </tr>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </TableBody>
+      </Table>
+      <Token label="matrix[user][movie]" />
+    </Stack>
   );
 }

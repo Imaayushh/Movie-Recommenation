@@ -1,4 +1,15 @@
 import { useMemo, useState } from 'react';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Button } from '@astryxdesign/core/Button';
+import { EmptyState } from '@astryxdesign/core/EmptyState';
+import { Grid } from '@astryxdesign/core/Grid';
+import { Heading } from '@astryxdesign/core/Heading';
+import { List, ListItem } from '@astryxdesign/core/List';
+import { Section } from '@astryxdesign/core/Section';
+import { Stack } from '@astryxdesign/core/Stack';
+import { Text } from '@astryxdesign/core/Text';
+import { TextInput } from '@astryxdesign/core/TextInput';
+
 import type { Movie, RatingRecord, User } from '../types';
 import { getCategory } from '../types';
 import { StarRating } from './StarRating';
@@ -30,6 +41,8 @@ export function ReviewPanel({ user, movies, myRatings, onRate }: ReviewPanelProp
     );
   }, [movies, search]);
 
+  const submitted = myRatings.filter((r) => r.rating > 0);
+
   function submit() {
     if (selectedId === null) {
       setFlash('Pick a movie first.');
@@ -48,86 +61,81 @@ export function ReviewPanel({ user, movies, myRatings, onRate }: ReviewPanelProp
   }
 
   return (
-    <div className="panel">
-      <div className="panel__head">
-        <h2>Give your review</h2>
-        <p>
-          Signed in as <strong>{user.name}</strong> (id {user.id}). Pick a movie, give 1–5 stars, submit. Rating a movie
-          <strong> 4★ or 5★ </strong>
-          is what unlocks genre-based suggestions for you.
-        </p>
-      </div>
+    <Section padding={4}>
+      <Stack gap={4}>
+        <Stack gap={1}>
+          <Heading level={2}>Give your review</Heading>
+          <Text color="secondary">
+            Signed in as {user.name} (id {user.id}). Pick a movie, give 1–5 stars, submit. Rating a movie 4★ or 5★
+            is what unlocks genre-based suggestions for you.
+          </Text>
+        </Stack>
 
-      <div className="review-form">
-        <input
-          className="input"
-          placeholder="Search movies or genres…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+        {flash && <Banner status="success" title={flash} />}
 
-        <div className="movie-picker">
-          {filtered.map((movie) => {
-            const category = getCategory(movie.category);
-            const rated = ratingByMovieId.get(movie.id) ?? 0;
-            const selected = selectedId === movie.id;
-            return (
-              <button
-                key={movie.id}
-                type="button"
-                className={`movie-chip ${selected ? 'movie-chip--active' : ''}`}
-                onClick={() => {
-                  setSelectedId(movie.id);
-                  setPendingRating(rated || 0);
-                }}
-              >
-                <span className="movie-chip__name">{movie.moviename}</span>
-                <span className="movie-chip__meta">
-                  {category.emoji} {category.label}
-                  {rated > 0 ? ` · you: ${rated}★` : ''}
-                </span>
-              </button>
-            );
-          })}
-          {filtered.length === 0 && <p className="muted">No movie matches “{search}”.</p>}
-        </div>
+        <Stack gap={3}>
+          <TextInput
+            label="Search movies or genres"
+            value={search}
+            onChange={(value: string) => setSearch(value)}
+          />
 
-        <div className="review-actions">
-          <StarRating value={pendingRating} onChange={setPendingRating} size="lg" />
-          <button className="btn btn--primary" onClick={submit}>
-            Submit review
-          </button>
-        </div>
-        {flash && <p className="flash">{flash}</p>}
-      </div>
+          {filtered.length === 0 ? (
+            <EmptyState title={`No movie matches "${search}"`} />
+          ) : (
+            <Grid columns={{ minWidth: 210 }} gap={1}>
+              {filtered.map((movie) => {
+                const category = getCategory(movie.category);
+                const rated = ratingByMovieId.get(movie.id) ?? 0;
+                const selected = selectedId === movie.id;
+                return (
+                  <Button
+                    key={movie.id}
+                    label={`${movie.moviename} — ${category.label}${rated > 0 ? ` · you: ${rated}★` : ''}`}
+                    variant={selected ? 'primary' : 'secondary'}
+                    onClick={() => {
+                      setSelectedId(movie.id);
+                      setPendingRating(rated || 0);
+                    }}
+                  />
+                );
+              })}
+            </Grid>
+          )}
 
-      <section className="section">
-        <h3>
-          Your reviews <span className="badge">{myRatings.filter((r) => r.rating > 0).length}</span>
-        </h3>
-        {myRatings.filter((r) => r.rating > 0).length === 0 ? (
-          <p className="muted">You have not rated anything yet.</p>
-        ) : (
-          <ul className="review-list">
-            {myRatings
-              .filter((r) => r.rating > 0)
-              .map((r) => {
+          <Stack direction="horizontal" gap={3}>
+            <StarRating value={pendingRating} onChange={setPendingRating} size="lg" />
+            <Button label="Submit review" variant="primary" onClick={submit} />
+          </Stack>
+        </Stack>
+
+        <Stack gap={2}>
+          <Heading level={3}>Your reviews ({submitted.length})</Heading>
+          {submitted.length === 0 ? (
+            <Text color="secondary">You have not rated anything yet.</Text>
+          ) : (
+            <List hasDividers>
+              {submitted.map((r) => {
                 const movie = movies.find((m) => m.id === r.movieId);
                 if (!movie) return null;
                 return (
-                  <li key={r.movieId}>
-                    <span className="review-list__name">{movie.moviename}</span>
-                    <span className="tag">{getCategory(movie.category).label}</span>
-                    <StarRating value={r.rating} onChange={(next) => onRate(movie.id, next)} size="sm" />
-                    <button className="btn btn--ghost btn--small" onClick={() => onRate(movie.id, 0)}>
-                      Remove
-                    </button>
-                  </li>
+                  <ListItem
+                    key={r.movieId}
+                    label={movie.moviename}
+                    description={getCategory(movie.category).label}
+                    endContent={
+                      <Stack direction="horizontal" gap={1}>
+                        <StarRating value={r.rating} onChange={(next) => onRate(movie.id, next)} size="sm" />
+                        <Button label="Remove" size="sm" onClick={() => onRate(movie.id, 0)} />
+                      </Stack>
+                    }
+                  />
                 );
               })}
-          </ul>
-        )}
-      </section>
-    </div>
+            </List>
+          )}
+        </Stack>
+      </Stack>
+    </Section>
   );
 }
