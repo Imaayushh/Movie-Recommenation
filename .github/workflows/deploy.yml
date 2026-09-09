@@ -1,0 +1,52 @@
+name: Deploy to GitHub Pages
+
+on:
+  # Run every push to the default branch
+  push:
+    branches: [main, master]
+  # Allow a manual run from the Actions tab
+  workflow_dispatch:
+
+# Allow this job to publish to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deploy at a time; queued runs are not cancelled
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      # The repo root is the site. Strip anything that is not part of it so the
+      # upload stays small and no build tooling leaks into the published site.
+      - name: Prune non-site files
+        run: |
+          rm -rf node_modules legacy-react dist reference .workbuddy-ai
+          rm -f .verify.cjs
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

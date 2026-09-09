@@ -2,32 +2,53 @@
 
 Project-specific guidance for AI coding agents.
 
-<!-- ASTRYX:START -->
-Astryx v0.5.4 · 163 components
-CLI: run every command as `npx astryx <cmd>` (shown below as `astryx ...`).
+## What this project is
 
-SETUP (once, in your app entry e.g. main.tsx) — without these, components render unstyled:
-  import "@astryxdesign/core/reset.css";
-  import "@astryxdesign/core/astryx.css";
+**CineMatch** is a static site: plain HTML, CSS and vanilla JavaScript.
+There is **no framework and no build step**. `index.html` at the repo root *is* the site.
 
-WORKFLOW — discover, don't guess. Before writing UI:
-1. `astryx build "<idea>"` — START HERE: returns a kit (closest [page] + [block]s + [component]s). No args = full playbook.
-2. `astryx template <name> [--skeleton]` — scaffold the [page]/[block]s it named, or study their layout. Templates are reference code.
-3. `astryx component <Name>` — props + examples for every component you use.
+## Rules
 
-RULES:
-- No <div> — components do all layout/spacing, page frame included.
-- Frame first: read `astryx docs layout` before writing any page or screen — page frame, region widths, breakpoint behavior.
-- Dense data = rows (Table, List/Item), never Card-wrapped list items; Card is for standalone widgets. Status = StatusDot/Token; Badge = counts only.
-- Custom styling: component props first; else style/className with tokens — var(--color-*|--spacing-*|--radius-*). No raw hex/px. (No StyleX/Tailwind compiler here — don't use xstyle/utility classes.)
-- Tokens for every value (`astryx docs tokens`). Brand/accent belongs in the theme (`astryx theme list` / `theme add <slug>`, or `astryx theme template` for a custom one) — never override --color-* in :root.
-- SELF-CHECK before you finish: re-read the file and replace any raw <div>/<span> layout, imported .css/@apply, or hardcoded value (#hex, 16px) with the component or a token (var(--color-*|--spacing-*|…)). If unsure a component/prop exists, run `astryx component <Name>` / `astryx search "<thing>"`; don't hand-roll CSS.
+- **No build tooling.** Do not add npm dependencies, bundlers, or frameworks unless the
+  user explicitly asks. The site must run by opening `index.html`.
+- **Scripts are classic `<script defer>` files**, not ES modules — this keeps the site
+  working when opened directly from the filesystem (`file://`).
+- **All asset paths are relative** (`./assets/...`). Never use absolute `/assets/...`
+  paths, or the deploy breaks on GitHub Pages project sites (`/<repo>/`).
+- **Never use `innerHTML` with data.** Movie titles and viewer names are user-editable;
+  build DOM with `document.createElement` + `textContent` (see the `h()` helper in
+  `assets/js/app.js`).
+- **All rendered UI lives in `assets/js/app.js`.** Keep the five menu panels as separate
+  functions and re-render through `render()` / `renderPanel()`.
+- **Domain logic stays out of the UI.** Scoring lives in `assets/js/recommender.js`,
+  catalog data in `assets/js/data.js`, persistence in `assets/js/storage.js`.
+- **Design tokens are CSS custom properties** in `assets/css/styles.css` (`:root` plus a
+  `prefers-color-scheme: dark` block). Use `var(--…)` — no raw hex values in components.
+- **Storage must fail safe.** `localStorage` can throw (private mode); `storage.js`
+  already swallows those errors — keep it that way.
 
-MORE CLI:
-  search "<query>"   find any component / hook / doc / template / block
-  component --list   163 components by category
-  template --list    page + block recipes
-  docs <topic>       browser-support, cli-integrations, color, elevation, getting-started, icons, illustrations, internationalization, layout, migration, motion, principles, shape, spacing, styling-libraries, styling, theme, tokens, typography, working-with-ai
-  swizzle <Name>     eject component source for deep customization
-  upgrade --apply    run after any @astryxdesign/core bump
-<!-- ASTRYX:END -->
+## Layout of files
+
+```
+index.html                     app shell, meta tags, script/style tags
+assets/css/styles.css          design tokens + all styling
+assets/js/data.js              CATEGORIES, MOVIES, USERS, SEED_RATINGS
+assets/js/recommender.js       buildMatrix / topRated / recommendForUser / pickSurprise
+assets/js/storage.js           localStorage wrapper
+assets/js/app.js               state + rendering + five menu panels
+.nojekyll                      GitHub Pages: skip Jekyll
+.github/workflows/deploy.yml   GitHub Pages deploy
+legacy-react/                  previous React + TypeScript source, kept for reference
+```
+
+## Original C program
+
+The app is a port of a C movie-recommendation program (`reference/original.c`).
+Genre ids, the 5 seeded viewers and the 50 seeded rating values are preserved 1:1 —
+do not renumber them. `0` always means "Not Rated".
+
+## Historical docs
+
+`DESIGN.md` and `apple/` describe the Apple design language that the visual style follows.
+They were written for the (now removed) Astryx/React version; treat them as design
+reference only, not as build instructions.

@@ -6,11 +6,71 @@
     <title>CineMatch — Movie Recommendation System</title>
     <meta
       name="description"
-      content="A movie recommendation system ported from C to React + TypeScript, with genre-aware suggestions."
+      content="A movie recommendation system with genre-aware suggestions, collaborative filtering and a raw ratings matrix. Plain HTML, CSS and JavaScript — no build step."
     />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f5f5f7" />
+    <meta property="og:title" content="CineMatch — Movie Recommendation System" />
+    <meta
+      property="og:description"
+      content="Genre-aware movie recommendations, collaborative filtering and a raw ratings matrix — plain HTML, CSS and JavaScript."
+    />
+    <meta property="og:type" content="website" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230066cc'/%3E%3Ctext x='16' y='23' font-size='18' text-anchor='middle' fill='%23fff' font-family='sans-serif' font-weight='bold'%3EC%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./assets/css/styles.css" />
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <a class="skip-link" href="#panel">Skip to content</a>
+
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="stack gap-0">
+          <h1 class="h1">CineMatch</h1>
+          <p class="text-secondary">
+            Movie recommendation system — C logic, rebuilt with plain HTML, CSS and JavaScript
+          </p>
+        </div>
+
+        <div class="header-controls">
+          <span class="field">
+            <label class="label" for="viewer-select">Viewer</label>
+            <select id="viewer-select" class="select"></select>
+          </span>
+          <span id="engine-status" class="status"></span>
+        </div>
+      </div>
+    </header>
+
+    <main class="page">
+      <nav id="tabs" class="tabs" role="tablist" aria-label="Main menu"></nav>
+
+      <div id="panel" role="tabpanel">
+        <noscript>
+          <section class="section">
+            <h2 class="h2">JavaScript required</h2>
+            <p class="text-secondary">
+              CineMatch runs entirely in your browser. Enable JavaScript to rate movies and get
+              recommendations — your data never leaves the device.
+            </p>
+          </section>
+        </noscript>
+      </div>
+
+      <footer class="footer">
+        <hr class="divider" />
+        <div class="row gap-2 wrap space-between">
+          <p id="footer" class="text-supporting"></p>
+          <p class="text-supporting">&copy; <span id="year"></span> CineMatch</p>
+        </div>
+      </footer>
+    </main>
+
+    <script src="./assets/js/data.js" defer></script>
+    <script src="./assets/js/recommender.js" defer></script>
+    <script src="./assets/js/storage.js" defer></script>
+    <script src="./assets/js/app.js" defer></script>
   </body>
 </html>
