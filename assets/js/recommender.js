@@ -1,5 +1,5 @@
 /**
- * CineMatch — recommendation engine.
+ * Filmphile — recommendation engine.
  *
  * Ported 1:1 from legacy-react/src/lib/recommender.ts.
  *
@@ -12,7 +12,7 @@
 (function (global) {
   'use strict';
 
-  var getCategory = global.CineMatchData.getCategory;
+  var getCategory = global.FilmphileData.getCategory;
 
   var TOP_RATING_THRESHOLD = 4;
   var LOW_RATING_THRESHOLD = 2;
@@ -244,7 +244,7 @@
     return candidates[Math.floor(random() * candidates.length)] || null;
   }
 
-  global.CineMatchRecommender = {
+  global.FilmphileRecommender = {
     TOP_RATING_THRESHOLD: TOP_RATING_THRESHOLD,
     LOW_RATING_THRESHOLD: LOW_RATING_THRESHOLD,
     buildMatrix: buildMatrix,

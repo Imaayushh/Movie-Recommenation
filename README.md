@@ -1,4 +1,4 @@
-# CineMatch — Movie Recommendation System
+# Filmphile — Movie Recommendation System
 
 A movie recommendation system built as a **static site: plain HTML, CSS and JavaScript**.
 No framework, no build step, no `npm install` — open `index.html` and it runs.

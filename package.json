@@ -1,0 +1,14 @@
+{
+  "name": "filmphile",
+  "version": "2.0.0",
+  "description": "Movie recommendation system backed by the TMDB API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "nodemailer": "^6.10.1"
+  }
+}

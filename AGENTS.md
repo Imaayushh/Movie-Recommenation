@@ -4,7 +4,7 @@ Project-specific guidance for AI coding agents.
 
 ## What this project is
 
-**CineMatch** is a static site: plain HTML, CSS and vanilla JavaScript.
+**Filmphile** is a static site: plain HTML, CSS and vanilla JavaScript.
 There is **no framework and no build step**. `index.html` at the repo root *is* the site.
 
 ## Rules

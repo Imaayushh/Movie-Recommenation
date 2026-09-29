@@ -1,5 +1,5 @@
 /**
- * CineMatch — localStorage wrapper.
+ * Filmphile — localStorage wrapper.
  *
  * Mirrors legacy-react/src/hooks/useLocalStorage.ts. Storage is best-effort:
  * if it is unavailable (private mode, file:// in some browsers) the app keeps
@@ -35,5 +35,5 @@
     }
   }
 
-  global.CineMatchStorage = { load: load, save: save, reset: reset };
+  global.FilmphileStorage = { load: load, save: save, reset: reset };
 })(window);

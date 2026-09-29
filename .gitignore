@@ -7,3 +7,15 @@ vite.config.ts.timestamp-*
 
 # Local agent workspace (memory, caches) — not part of the site
 .workbuddy-ai/
+
+# Secrets & runtime data — never commit the TMDB key or user store
+.env
+server-data/*
+!server-data/toplists.json
+!server-data/details.json
+
+# Server logs & process files
+*.log
+*.pid
+__pycache__/
+*.pyc

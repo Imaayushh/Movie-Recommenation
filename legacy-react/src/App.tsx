@@ -36,8 +36,8 @@ export default function App() {
   const [choice, setChoice] = useState<MenuChoice>(1);
   const [exited, setExited] = useState(false);
 
-  const ratingsStore = useLocalStorage<RatingRecord[]>('cinematch.ratings', SEED_RATINGS);
-  const usersStore = useLocalStorage<User[]>('cinematch.users', USERS);
+  const ratingsStore = useLocalStorage<RatingRecord[]>('filmphile.ratings', SEED_RATINGS);
+  const usersStore = useLocalStorage<User[]>('filmphile.users', USERS);
   const [activeUserId, setActiveUserId] = useState<number>(USERS[0].id);
   const [newUserName, setNewUserName] = useState('');
 
@@ -90,7 +90,7 @@ export default function App() {
           <Stack gap={5}>
             <Stack direction="horizontal" gap={4}>
               <Stack gap={0.5}>
-                <Heading level={1}>CineMatch</Heading>
+                <Heading level={1}>Filmphile</Heading>
                 <Text color="secondary">
                   Movie recommendation system — C logic, rebuilt in React + TypeScript
                 </Text>
